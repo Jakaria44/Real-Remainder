@@ -7,10 +7,10 @@ double xa[]={100, 100, 300},sx= 1280,sy=720;
 double ya[]={100, 0, 150};
 char  str[]="Jakaria", position[100];
 double px=0, py=0 ;
-int  mode_point = 0;
+int  mode_point = 0, mode_axis = 1 , mode_grid = 1;
 
 
-void draw_graphs()
+void draw_grid()
 {
 
     iSetColor(25,25,75);
@@ -128,9 +128,9 @@ void iDraw()
     //place your drawing codes here
     iClear();
 
-    draw_graphs();
+    if(mode_grid)  draw_grid();
 
-    draw_axes();
+    if(mode_axis)draw_axes();
 
     draw_st_line();
 
@@ -148,9 +148,11 @@ void iDraw()
     iCircle(x,y,100);
     iSetColor(10,100,255);
 
-
     /** point tracing **/
     trace_point();
+    iSetColor(50,150,250);
+    iText(20,10,"press 'g' to show or hide GRIDs",GLUT_BITMAP_HELVETICA_18);
+    iText(20,50,"press 'a' to show or hide AXES",GLUT_BITMAP_HELVETICA_18);
 }
 
 
@@ -225,7 +227,14 @@ void iKeyboard(unsigned char key)
         dx--;
         dy--;
     }
-
+    else if(key == 'g')
+        {
+            mode_grid = !mode_grid;
+        }
+    else if(key == 'a')
+        {
+            mode_axis = !mode_axis;
+        }
     //place your codes for other keys here
 }
 
