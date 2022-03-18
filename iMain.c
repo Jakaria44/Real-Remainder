@@ -128,25 +128,6 @@ void iDraw()
     //place your drawing codes here
     iClear();
 
-    /*
-    iCircle(300,320,20);/*
-    iSetColor(25,255,200);
-    iFilledRectangle(x+20,y+20,100,100);
-    iLine(300,300,545,515);
-    iSetColor(25,205,255);
-    iText(10,10,"click to go",GLUT_BITMAP_HELVETICA_18);
-    iFilledPolygon(xa, ya, 3);
-
-    iShowBMP2(500,564,"wheel.bmp", 0xffffff);
-    iLine(300,300,500,300);
-    //iRectangle(375,320,70,20);
-    double xa[]={375,400,450,390};
-    double ya[]={320,175,175,320};
-    iPolygon(xa, ya, 4);
-    iLine(340,500,300,325);*/
-
-    /**draw graphs*/
-
     draw_graphs();
 
     draw_axes();
@@ -157,9 +138,7 @@ void iDraw()
 
     draw_polynomial(); //   (3 degree)
 
-
     // porer egulo modify korte hobe..
-
 
     iSetColor(25,225,200);
     iEllipse(sx/2, sy/2,400,250);
