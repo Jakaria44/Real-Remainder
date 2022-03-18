@@ -1,4 +1,4 @@
-#include "iGraphics.h"
+# include "iGraphics.h"
 #include <math.h>
 #include<string.h>
 
@@ -10,20 +10,10 @@ double px=0, py=0 ;
 int  mode_point = 0;
 
 
-
-
-/*
-	function iDraw() is called again and again by the system.
-*/
-void iDraw()
+void draw_graphs()
 {
-    //place your drawing codes here
-    iClear();
-
-    /**draw graphs*/
 
     iSetColor(25,25,75);
-    //iSetColor(00,00,00);
     for(int i = 1; i < sx / 2; i+=20){
         iLine(0, sy/2 + i, sx, sy/2+i);
         iLine(0, sy/2 - i, sx, sy/2-i);
@@ -31,13 +21,17 @@ void iDraw()
         iLine(sx/2-i , 0, sx/2-i, sy);
     }
 
+}
 
-    /***draw axes**/
+void draw_axes()
+{
     iSetColor(25,200,200);
     iLine(0, sy/2 , sx, sy/2);
     iLine(sx/2, 0, sx/2, sy);
+}
 
-    /**straight line**/
+void draw_st_line()
+{
 
     double m=1, c= 0;  //user input.. can also be written  ax + by + c =0;
     iSetColor(20,255,250);
@@ -46,72 +40,6 @@ void iDraw()
             iPoint(j, gy,1);
         gy = (sy/2) - m * (j - (sx / 2)) + c;
         iPoint(j, gy,1);
-    }
-
-    /**parabola**/
-
-
-    double a=50;   // will be  modified
-    for(float j = 0; j <= sx; j+=0.15){
-        double gy = sy / 2 + sqrt(4 * a * ( j - sx / 2 + 640 ));
-        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1.5);
-        gy = sy / 2 - sqrt(4  * a * ( j- sx / 2 + 640));
-        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
-
-    }
-
-    //polynomial   (3 degree)
-    double
-    qa = 0,
-    qb = 0.025,
-    qc = 0,
-    qd = 0;
-
-    iSetColor(20,175,250);
-    for(float j = 0; j<sx; j+=0.15){
-        double gy = sy / 2 + qa * pow(j-sx/2, 3) + qb *  pow((j-sx/2), 2) + qc * pow(j- sx / 2 , 1) + qd  ;
-        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
-    }
-
-
-    iSetColor(25,225,200);
-    iEllipse(sx/2, sy/2,400,250);
-    iSetColor(25,225,200);
-    iEllipse(sx/2, sy/2,250,400);
-    iSetColor(125,255,200);
-    iCircle(x,y,100);
-    iSetColor(10,100,255);
-
-
-    /** point tracing **/
-
-    if(mode_point==1) {
-        double kx=1;
-        if(px > sx-175) kx=-1;
-        double A[7]={
-                    px,
-                    px+25.0 * kx,
-                    px+25.0 * kx,
-                    px+175.0 * kx,
-                    px+175.0 * kx,
-                    px+25.0 * kx,
-                    px+25.0 * kx
-                    },
-                B[7]={
-                    py,
-                    py-8,
-                    py-25.0,
-                    py-25.0,
-                    py+25.0,
-                    py+25.0,
-                    py+8};
-            iFilledCircle(px, py,5);
-            iSetColor(100,210,100);
-            iPolygon(A,B,7);
-            pos_from_int();
-
-            iSetColor(10,255,100);
-            iText(px + 30 - (1-kx)*100, py-4, position,GLUT_BITMAP_HELVETICA_18);
     }
 }
 
@@ -128,6 +56,125 @@ void pos_from_int()
     sprintf(pos_temp,"%d", intpos_y);
     strcat(position, pos_temp);
 }
+
+void draw_polynomial()
+{
+    double
+    qa = 0,
+    qb = 0.025,
+    qc = 0,
+    qd = 0;
+
+    iSetColor(20,175,250);
+    for(float j = 0; j<sx; j+=0.15){
+        double gy = sy / 2 + qa * pow(j-sx/2, 3) + qb *  pow((j-sx/2), 2) + qc * pow(j- sx / 2 , 1) + qd  ;
+        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
+    }
+}
+
+void draw_parabola()
+{
+    double a=50;   // will be  modified
+    for(float j = 0; j <= sx; j+=0.15){
+        double gy = sy / 2 + sqrt(4 * a * ( j - sx / 2 + 640 ));
+        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1.5);
+        gy = sy / 2 - sqrt(4  * a * ( j- sx / 2 + 640));
+        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
+
+    }
+
+}
+
+void trace_point()
+{
+
+    if(mode_point==1) {
+        double kx=1;
+        if(px > sx-185) kx=-1;
+        double A[7]={
+                    px,
+                    px+25.0 * kx,
+                    px+25.0 * kx,
+                    px+185.0 * kx,
+                    px+185.0 * kx,
+                    px+25.0 * kx,
+                    px+25.0 * kx
+                    },
+                B[7]={
+                    py,
+                    py-8,
+                    py-25.0,
+                    py-25.0,
+                    py+25.0,
+                    py+25.0,
+                    py+8};
+        iFilledCircle(px, py,5);
+        iSetColor(100,210,100);
+        iPolygon(A,B,7);
+        pos_from_int();
+
+        iSetColor(10,255,100);
+        iText(px + 30 - (1-kx)*105, py-4, position,GLUT_BITMAP_HELVETICA_18);
+    }
+}
+
+
+
+/*
+	function iDraw() is called again and again by the system.
+*/
+void iDraw()
+{
+    //place your drawing codes here
+    iClear();
+
+    /*
+    iCircle(300,320,20);/*
+    iSetColor(25,255,200);
+    iFilledRectangle(x+20,y+20,100,100);
+    iLine(300,300,545,515);
+    iSetColor(25,205,255);
+    iText(10,10,"click to go",GLUT_BITMAP_HELVETICA_18);
+    iFilledPolygon(xa, ya, 3);
+
+    iShowBMP2(500,564,"wheel.bmp", 0xffffff);
+    iLine(300,300,500,300);
+    //iRectangle(375,320,70,20);
+    double xa[]={375,400,450,390};
+    double ya[]={320,175,175,320};
+    iPolygon(xa, ya, 4);
+    iLine(340,500,300,325);*/
+
+    /**draw graphs*/
+
+    draw_graphs();
+
+    draw_axes();
+
+    draw_st_line();
+
+    draw_parabola();
+
+    draw_polynomial(); //   (3 degree)
+
+
+    // porer egulo modify korte hobe..
+
+
+    iSetColor(25,225,200);
+    iEllipse(sx/2, sy/2,400,250);
+    iSetColor(25,225,200);
+    iEllipse(sx/2, sy/2,250,400);
+    iSetColor(125,255,200);
+    iCircle(x,y,100);
+    iSetColor(10,100,255);
+
+
+    /** point tracing **/
+    trace_point();
+}
+
+
 
 /*
 	function iMouseMove() is called when the user presses and drags the mouse.
