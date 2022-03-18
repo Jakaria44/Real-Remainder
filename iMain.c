@@ -1,31 +1,15 @@
-# include "iGraphics.h"
+#include "iGraphics.h"
 #include <math.h>
+#include<string.h>
 
 int x = 640, y = 360, r = 15,dx,dy;
-double xa[]={100, 100, 300},sx=1280,sy=720;
+double xa[]={100, 100, 300},sx= 1280,sy=720;
 double ya[]={100, 0, 150};
-char  str[]="Jakaria";
-//double px, py ;
-int kx=1, mode_point = 0;
-double ax[]= {
-            px,
-            px+25.0 * kx,
-            px+25.0 * kx,
-            px+125.0 * kx,
-            px+125.0 * kx,
-            px+25.0 * kx,
-            px+25.0 * kx
-            };
+char  str[]="Jakaria", position[100];
+double px=0, py=0 ;
+int  mode_point = 0;
 
-double ay[]={
-            py,
-            py-8,
-            py-25.0,
-            py-25.0,
-            py+25.0,
-            py+25.0,
-            py+8
-        };
+
 
 
 /*
@@ -35,7 +19,6 @@ void iDraw()
 {
     //place your drawing codes here
     iClear();
-
 
     /**draw graphs*/
 
@@ -56,7 +39,7 @@ void iDraw()
 
     /**straight line**/
 
-    double m=1, c= 0;
+    double m=1, c= 0;  //user input.. can also be written  ax + by + c =0;
     iSetColor(20,255,250);
     for(float j = 0; j <= sx; j+=0.25){
         double gy = (sy/2) + m * (j - (sx / 2)) + c;
@@ -68,7 +51,7 @@ void iDraw()
     /**parabola**/
 
 
-    double a=50;
+    double a=50;   // will be  modified
     for(float j = 0; j <= sx; j+=0.15){
         double gy = sy / 2 + sqrt(4 * a * ( j - sx / 2 + 640 ));
         if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1.5);
@@ -77,7 +60,7 @@ void iDraw()
 
     }
 
-    //polynomial
+    //polynomial   (3 degree)
     double
     qa = 0,
     qb = 0.025,
@@ -86,26 +69,65 @@ void iDraw()
 
     iSetColor(20,175,250);
     for(float j = 0; j<sx; j+=0.15){
-        double gy = sy / 2 +qa * pow(j-sx/2, 3) + qb*  pow((j-sx/2), 2) + qc * pow(j- sx / 2 , 1) +qd  ;
+        double gy = sy / 2 + qa * pow(j-sx/2, 3) + qb *  pow((j-sx/2), 2) + qc * pow(j- sx / 2 , 1) + qd  ;
         if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
     }
+
+
     iSetColor(25,225,200);
     iEllipse(sx/2, sy/2,400,250);
     iSetColor(25,225,200);
     iEllipse(sx/2, sy/2,250,400);
     iSetColor(125,255,200);
-    iFilledCircle(x,y,100);
-    double pp[]={100,100,200,200,100,100,75}, pq[]={65,50,50,100,100,85,75};
+    iCircle(x,y,100);
     iSetColor(10,100,255);
-   // iPolygon( pp, pq, 7);
 
 
-    iSetColor(10,100,255);
-    iPolygon(ax, ay,7);// problem hosse
+    /** point tracing **/
 
+    if(mode_point==1) {
+        double kx=1;
+        if(px > sx-175) kx=-1;
+        double A[7]={
+                    px,
+                    px+25.0 * kx,
+                    px+25.0 * kx,
+                    px+175.0 * kx,
+                    px+175.0 * kx,
+                    px+25.0 * kx,
+                    px+25.0 * kx
+                    },
+                B[7]={
+                    py,
+                    py-8,
+                    py-25.0,
+                    py-25.0,
+                    py+25.0,
+                    py+25.0,
+                    py+8};
+            iFilledCircle(px, py,5);
+            iSetColor(100,210,100);
+            iPolygon(A,B,7);
+            pos_from_int();
 
+            iSetColor(10,255,100);
+            iText(px + 30 - (1-kx)*100, py-4, position,GLUT_BITMAP_HELVETICA_18);
+    }
 }
 
+
+void pos_from_int()
+{
+    int intpos_x= px-sx/2.0, intpos_y = py - sy/2.0; // origin has been transferred
+
+    char pos_temp[]="x = ";
+    strcpy(position, pos_temp);
+    sprintf(pos_temp,"%d", intpos_x);
+    strcat(position, pos_temp);
+    strcat(position,", y = ");
+    sprintf(pos_temp,"%d", intpos_y);
+    strcat(position, pos_temp);
+}
 
 /*
 	function iMouseMove() is called when the user presses and drags the mouse.
@@ -128,10 +150,9 @@ void iMouse(int button, int state, int mx, int my)
     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
         //place your codes here
-        printf("x = %d, y= %d\n",mx,my);
+        //printf("x = %d, y= %d\n",mx,my);
         //x += 5;
-       // y += 5;
-
+        // y += 5;
 
        px=mx;
        py=my;
@@ -231,10 +252,11 @@ void my_anim(){
 int main()
 {
     //place your own initialization codes here.
-    iSetTimer(10 ,my_anim);
+    /*iSetTimer(10 ,my_anim);
 	dx = 10;
-	dy = 10;
-    iInitialize(sx, sy, " Project 1126 !");
+	dy = 10;*/
+
+    iInitialize(sx, sy, " Project 1126 ");
     return 0;
 }
 
