@@ -2,12 +2,26 @@
 #include <math.h>
 #include<string.h>
 
-int x = 640, y = 360, r = 15,dx,dy;
-double xa[]={100, 100, 300},sx= 1280,sy=720;
+int r = 15,dx,dy;
+double xa[]={100, 100, 300};
 double ya[]={100, 0, 150};
 char  str[]="Jakaria", position[100];
-double px=0, py=0 ;
-int  mode_point = 0, mode_axis = 1 , mode_grid = 1;
+double x = 840, y =360 , px=0, py=0 ,t=0;
+int  tri = 1,mode_point = 0, mode_axis = 1 , mode_grid = 1;
+
+double sx = 1280, sy = 720;
+
+/*****              general equation        *****/
+/*****  ax2 + by2 + hxy + gx + fy + c = 0   *****/
+
+double a=01,
+       b=-01,
+       c=0,
+       f=0,
+       g=0,
+       h=0,
+       D;          // discriminant: D = (h*i-f )*(h*i-f )- 4 * b * ( a * i*i + g * i + c);
+
 
 
 void draw_grid()
@@ -38,8 +52,8 @@ void draw_st_line()
     for(float j = 0; j <= sx; j+=0.25){
         double gy = (sy/2) + m * (j - (sx / 2)) + c;
             iPoint(j, gy,1);
-        gy = (sy/2) - m * (j - (sx / 2)) + c;
-        iPoint(j, gy,1);
+            gy = (sy/2) - m * (j - (sx / 2)) + c;
+            iPoint(j, gy,1);
     }
 }
 
@@ -66,8 +80,9 @@ void draw_polynomial()
     qd = 0;
 
     iSetColor(20,175,250);
-    for(float j = 0; j<sx; j+=0.15){
-        double gy = sy / 2 + qa * pow(j-sx/2, 3) + qb *  pow((j-sx/2), 2) + qc * pow(j- sx / 2 , 1) + qd  ;
+    for(float j = 0; j<sx; j+=1){
+        //double gy = sy / 2 + qa * pow(j-sx/2, 3) + qb *  pow((j-sx/2), 2) + qc * pow(j- sx / 2 , 1) + qd  ;
+        double gy = sy / 2 +10*sin((j-sx/2)*180/3.14159);
         if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
     }
 }
@@ -77,6 +92,7 @@ void draw_parabola()
     double a=50;   // will be  modified
     for(float j = 0; j <= sx; j+=0.15){
         double gy = sy / 2 + sqrt(4 * a * ( j - sx / 2 + 640 ));
+        //double gy = sy / 2 + pow((j-sx/2),2)*cos(1/(j-sx/2));
         if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1.5);
         gy = sy / 2 - sqrt(4  * a * ( j- sx / 2 + 640));
         if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
@@ -119,6 +135,145 @@ void trace_point()
 }
 
 
+double f_tri(double aa, int a)
+{
+    switch (a)
+    {
+    case 1:    return sin(aa);
+
+    case 11:   return asin(aa);                                                    // arc sin x
+
+    case 2:    return cos(aa);
+
+    case 22:   return acos(aa);
+
+    case 3:    return tan(aa);
+
+    case 33:   return atan(aa);
+
+    case 4:    return 1 / tan(aa);                                                     //cot(aa)
+
+    case 44:   return atan(1/aa);
+
+    case 5:    return 1/cos(aa);                                                           //sec(aa)
+
+    case 55:   return acos(1/aa);
+
+    case 6:    return 1/sin(aa);                                                           //cosec(aa)
+
+    case 66:   return asin(1/aa);
+
+    }
+}
+
+double f_trigon(double x, int a){           // a: checking function (sin or cos or ...)
+        double tri_x , tri_y ;
+
+        tri_x = (x-sx/2)*3.1415926535/180;
+        tri_y = sy / 2 + 100 * f_tri(tri_x, a);
+
+        if(tri_y > sy || tri_y < 0) return NULL;
+        return tri_y;
+
+}
+void draw_trigon(int a)
+{
+
+    iSetColor(20,175,250);
+    for(double i = 0 ;i < sx; i+=.5)
+    {
+        double tri_y = f_trigon(i,a);
+        if(tri_y != NULL)
+        iPoint(i, tri_y, 1);
+    }
+
+}
+
+void  tri_function_text(int a)
+{
+
+    switch (a)
+    {
+    case 1: iText(50, 540, "y = sin (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 11:    iText(50,540, "y = arc sin (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 2:     iText(50, 540 , "y = cos (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 22:     iText(50, 540 , "y = arc cos (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 3:     iText(50, 540, "y = tan (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 33:     iText(50, 540 , "y = arc tan (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 4:     iText(50, 540 , "y = cot (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 44:     iText(50, 540 , "y = arc cot (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 5:     iText(50, 540 , "y = sec (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 55:     iText(50, 540 , "y = arc sec (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 6:     iText(50, 540 , "y = cosec (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    case 66:     iText(50, 540 , "y = arc cosec (x)",GLUT_BITMAP_HELVETICA_18);
+            return ;
+
+    }
+
+}
+
+double arith_pos(double x)
+{
+    double fy;
+    if(b !=0){
+
+        fy = ( -(h * x + f ) + sqrt(D)) / ( 2 * b);
+        return fy;
+    }
+    if(b == 0){
+        return -(a * x * x + g * x + c)/( h * x + f);
+    }
+}
+double arith_neg(double x)
+{
+    double fy;
+    if(b !=0){
+
+        fy = ( -(h * x + f ) - sqrt(D)) / ( 2 * b);
+        return fy;
+    }
+    if(b == 0){
+        return -(a * x * x + g * x + c)/( h * x + f);
+    }
+}
+
+void draw_conic()
+{
+
+    for(double i =- sx / 2; i < sx / 2; i+=.1){
+        D= (h*i-f )*(h*i-f )- 4 * b * ( a * i*i + g * i + c);
+
+        if( D < 0) continue;
+        double conic_y;
+        conic_y = sy / 2 + arith_neg(i );
+        if(conic_y < sy || conic_y > 0) iPoint( i +sx / 2 , conic_y, 1);
+        conic_y = sy/2 + arith_pos(i );
+        if(conic_y < sy || conic_y > 0) iPoint( i +sx / 2, conic_y, 1);
+    }
+
+}
 
 /*
 	function iDraw() is called again and again by the system.
@@ -128,31 +283,70 @@ void iDraw()
     //place your drawing codes here
     iClear();
 
+    /*
+    iCircle(300,320,20);/*
+    iSetColor(25,255,200);
+    iFilledRectangle(x+20,y+20,100,100);
+    iLine(300,300,545,515);
+    iSetColor(25,205,255);
+    iText(10,10,"click to go",GLUT_BITMAP_HELVETICA_18);
+    iFilledPolygon(xa, ya, 3);
+
+    iShowBMP2(500,564,"wheel.bmp", 0xffffff);
+    iLine(300,300,500,300);
+    //iRectangle(375,320,70,20);
+    double xa[]={375,400,450,390};
+    double ya[]={320,175,175,320};
+    iPolygon(xa, ya, 4);
+    iLine(340,500,300,325);*/
+
+    /**draw grids*/
+
     if(mode_grid)  draw_grid();
 
     if(mode_axis)draw_axes();
 
-    draw_st_line();
+    //draw_st_line();
 
-    draw_parabola();
+    //draw_parabola();
 
-    draw_polynomial(); //   (3 degree)
+    //draw_polynomial(); //   (3 degree)
 
+    draw_trigon(tri);
+    tri_function_text(tri);
     // porer egulo modify korte hobe..
+
 
     iSetColor(25,225,200);
     iEllipse(sx/2, sy/2,400,250);
     iSetColor(25,225,200);
     iEllipse(sx/2, sy/2,250,400);
     iSetColor(125,255,200);
-    iCircle(x,y,100);
+    iCircle(x,y,75);
     iSetColor(10,100,255);
+
 
     /** point tracing **/
     trace_point();
-    iSetColor(50,150,250);
+
+    /** text */
+    iSetColor(50,200,250);
     iText(20,10,"press 'g' to show or hide GRIDs",GLUT_BITMAP_HELVETICA_18);
     iText(20,50,"press 'a' to show or hide AXES",GLUT_BITMAP_HELVETICA_18);
+    iText(20,85,"press right mouse click to hide point tracing",GLUT_BITMAP_HELVETICA_18);
+    iText(20,120,"Pess click anywhere in the grid to show point tracing",GLUT_BITMAP_HELVETICA_18);
+
+    /**********
+        y = sin(5x)
+        5x
+
+
+    **********/
+    iFilledCircle(x,y,10);
+
+    iSetColor(25,155,200);
+    draw_conic();
+
 }
 
 
@@ -277,11 +471,18 @@ void iSpecialKeyboard(unsigned char key)
 
 void my_anim(){
 
+    x=t;
+    y = f_trigon(t,tri) ;
+    t+=2;
+    if(t>=sx) t=0;
+
+    /*
 	x += dx;
 	y += dy;
 
 	if(x > 1280 || x < 0)dx = -dx;
 	if(y > 720  || y < 0)dy = -dy;
+        */
 }
 
 int main()
@@ -290,6 +491,8 @@ int main()
     /*iSetTimer(10 ,my_anim);
 	dx = 10;
 	dy = 10;*/
+
+	iSetTimer(1,my_anim);
 
     iInitialize(sx, sy, " Project 1126 ");
     return 0;
