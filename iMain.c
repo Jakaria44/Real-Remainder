@@ -1,28 +1,26 @@
 # include "iGraphics.h"
 #include <math.h>
 #include<string.h>
-#include <stdlib.h>
+#include <windows.h>
 
-
-
-int r = 15;
+double sx = 1280,
+        sy = 720,
+        scale_x = sx / 1280.0,
+        scale_y = sy/720.0 ;
+int r = 15, t = 0;
 int len;
 int mode;
 char str[100], str2[100] , tok[100][100];
 
-double xa[]={100, 100, 300};
-double ya[]={100, 0, 150};
 
 char  position[100];
-double x = 840, y =360 , px = 0, py = 0 ,t = 0;
-int  tri = 4;
+double x = 840 *scale_x , y =360*scale_x , px , py  ;
+//x, y moving circle.
 
-double sx = 1280, sy = 720;
 double point_array_size = sx/0.05;
 int p_size = point_array_size;
 
 /*****   modes     *****/
-
 int mode_point = 0,
     mode_axis = 1 ,
     mode_grid = 1,
@@ -31,7 +29,7 @@ int mode_point = 0,
     mode_color=0 ;
 
 
-/*****              general equation        *****/
+/*****              general equation          *****/
 /*****  ax^2 + by^2 + hxy + gx + fy + c = 0   *****/
 
 double  a =   0,
@@ -50,6 +48,12 @@ typedef struct point{
     double y1;
     double y2;
 } point;
+
+typedef struct color{
+    double R;
+    double G;
+    double B;
+} color;
 
 point *p1 = NULL;
 
@@ -99,10 +103,20 @@ void refresh_neg(char *str){
     }
 }
 
+void reset_co_eff(){
+    a = 0;
+    b = 0;
+    c = 0;
+    f = 0;
+    g = 0;
+    h = 0;
+
+}
+
 //extracts the values of a,b,c,g,f,h from str[]
 
 void co_eff(char *str){
-
+    reset_co_eff();
     int k = 0;
 	char* token = strtok(str,"+"),tok[100][100];
 	while (token != NULL) {
@@ -111,7 +125,6 @@ void co_eff(char *str){
 	}
     int  j = 0,i = 0,  pos;
     do {
-        j = 0;
         do  {
 
             pos = strfind(tok[i], general[j]);
@@ -146,7 +159,6 @@ void co_eff(char *str){
     }   while( i < k );
 
 }
-
 
 double discriminant(double i)
 {
@@ -187,41 +199,38 @@ void pos_from_int()
     strcat(position, pos_temp);
 }
 
-
-
 void trace_point()
 {
-
     if(mode_point==1) {
         double kx=1;
-        if(px > sx-185) kx=-1;
+        if(px > sx - 185 * scale_x) kx=-1;
         double A[7]={
                     px,
-                    px+25.0 * kx,
-                    px+25.0 * kx,
-                    px+185.0 * kx,
-                    px+185.0 * kx,
-                    px+25.0 * kx,
-                    px+25.0 * kx
+                    px+25.0 * kx * scale_x,
+                    px+25.0 * kx * scale_x,
+                    px+185.0 * kx * scale_x,
+                    px+185.0 * kx  * scale_x,
+                    px+25.0 * kx * scale_x,
+                    px+25.0 * kx * scale_x
                     },
                 B[7]={
                     py,
-                    py-8,
-                    py-25.0,
-                    py-25.0,
-                    py+25.0,
-                    py+25.0,
-                    py+8};
+                    py-8 * scale_y ,
+                    py-25.0 * scale_y ,
+                    py-25.0 * scale_y ,
+                    py+25.0 * scale_y ,
+                    py+25.0 * scale_y ,
+                    py+8 * scale_y
+                    };
         iFilledCircle(px, py,5);
         iSetColor(100,210,100);
         iPolygon(A,B,7);
         pos_from_int();
 
         iSetColor(10,255,100);
-        iText(px + 30 - (1-kx)*105, py-4, position,GLUT_BITMAP_HELVETICA_18);
+        iText(px + 30 * scale_x - (1-kx)*105 * scale_x , py-4 * scale_y, position,GLUT_BITMAP_HELVETICA_18);
     }
 }
-
 
 
 double arith_pos(double x)
@@ -229,6 +238,7 @@ double arith_pos(double x)
     double fy;
     D = discriminant(x);
     if(b !=0){
+
         fy = ( -(h * x + f ) + sqrt(D)) / ( 2 * b);
         return fy;
     }
@@ -268,14 +278,18 @@ void drawTextBox()
 {
 	iSetColor(50, 150, 150);
     if(mode ) iSetColor(250,250,250);
-	iRectangle(.75 * sx , .75 * sy , sx*0.25-20, 30);
+	iRectangle(.75 * sx , 0.75 * sy , sx*0.25-20*scale_x, 30 *scale_y);
+	/*
+    iRectangle(.75 * sx , .75 * sy -30 * scale_x ,sx*0.25-20*scale_y, 30);
+    iText(.75 * sx + 10 ,.75 * sy -20 ,"add equation",GLUT_BITMAP_HELVETICA_18);
+    */
 }
 
 void inTextBox(){
     if(!strlen(str))
 	{
         iSetColor(155, 155, 155);
-		iText(.75 * sx + 10 ,.75 * sy + 10 ,"Enter equation here..",GLUT_BITMAP_HELVETICA_18);
+		iText(.75 * sx + 10 *scale_x ,.75 * sy + 10 * scale_y ,"Enter equation here..",GLUT_BITMAP_HELVETICA_18);
     }
 	else {
 		iSetColor(255, 255, 255);
@@ -283,8 +297,15 @@ void inTextBox(){
         iText(sx-65, .75 * sy + 10," = 0",GLUT_BITMAP_HELVETICA_18);
 	}
 }
+/*
 
+void f_project(){
+	FILE *fp;
 
+	fclose(fp);
+
+}
+*/
 
 
 void make_point(){
@@ -301,30 +322,45 @@ void make_point(){
         j+=0.05;
     }
 }
+color col[]={
+            {255, 255,255},
+            {255,0,0},
+            {0,255,0},
+            {0,0,255},
+            };
+void set_color(){
+    int n = 2;
+    iSetColor(col[n].R, col[n].G, col[n].B);
+    iFilledRectangle(sx -15 * scale_x , .75 *sy + 10*scale_y , 12, 12);
+
+}
 
 void draw_curve(){
 
+    set_color();
     for(int i = 0; i < p_size; i++){
-        if(p1[i].y1 != NULL)    iPoint(p1[i].x, p1[i].y1, 0.9 );
-        if(p1[i].y2 != NULL)    iPoint(p1[i].x, p1[i].y2, 0.9 );
+        if(p1[i].y1 != NULL)    iPoint(p1[i].x, p1[i].y1, 1 );
+        if(p1[i].y2 != NULL)    iPoint(p1[i].x, p1[i].y2, 1 );
     }
 }
-void tips(){
 
+void tips(){
+    iSetColor(255,255,255);
+    iRectangle(20*scale_x , sy-32*scale_y ,12*scale_x,12*scale_y);
     iSetColor(50,200,250);
     if(tips_mode == 1){
 
-        iText(20,sy-45,">press 'g' to show or hide GRIDs",GLUT_BITMAP_HELVETICA_12);
-        iText(20,sy-65,">press 'a' to show or hide AXES",GLUT_BITMAP_HELVETICA_12);
-        iText(20,sy-85,">press right mouse click to hide point tracing",GLUT_BITMAP_HELVETICA_12);
-        iText(20,sy-105,">Click anywhere in the grid to show point tracing",GLUT_BITMAP_HELVETICA_12);
+        iText(20*scale_x  ,sy-45 *scale_y ,">press 'g' to show or hide GRIDs",GLUT_BITMAP_HELVETICA_18);
+        iText(20*scale_x,sy-65 *scale_y,">press 'a' to show or hide AXES",GLUT_BITMAP_HELVETICA_18);
+        iText(20*scale_x,sy-85 *scale_y,">press right mouse click to hide point tracing",GLUT_BITMAP_HELVETICA_18);
+        iText(20*scale_x,sy-105 *scale_y,">Click anywhere in the grid to show point tracing",GLUT_BITMAP_HELVETICA_18);
         iSetColor(255,255,255);
-        iFilledRectangle(20,sy-32,12,12);
+        iFilledRectangle(22*scale_x, sy-30*scale_y, 8*scale_x, 8*scale_y);
     }
     else {
         iSetColor(255,255,255);
-        iText(40,sy-32,"Click here for tips",GLUT_BITMAP_HELVETICA_18);
-        iRectangle(20,sy-32,12,12);
+        iText(40*scale_x ,sy-32 *scale_y,"Click here for tips",GLUT_BITMAP_HELVETICA_18);
+
     }
 }
 
@@ -336,23 +372,23 @@ void iDraw()
     //place your drawing codes here
     iClear();
 
-    /**draw grids*/
-
     if(mode_grid)  draw_grid();
 
     if(mode_axis) draw_axes();
-
-   
-    iCircle(x,y,75);
+	
+    if(y != NULL && x <= sx && draw_mode ){
+        iCircle(x,y,70);
+        iFilledCircle(x,y,7);
+    }
+	
     iSetColor(10,100,255);
 
 
     /** point tracing **/
     trace_point();
 
+    /** text */
     tips();
-
-    iFilledCircle(x,y,10);
 
     drawTextBox();
     inTextBox();
@@ -362,7 +398,6 @@ void iDraw()
     if(draw_mode ==1) draw_curve();
 
 }
-
 /*
 	function iMouseMove() is called when the user presses and drags the mouse.
 	(mx, my) is the position where the mouse pointer is.
@@ -384,14 +419,12 @@ void iMouse(int button, int state, int mx, int my)
     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
         //place your codes here
-       
-
+        
        px=mx;
        py=my;
        if(!mode)    mode_point = 1;
 
-
-       if(mx >= .75 * sx  && mx <= .75 * sx +200 && my >= .75 * sy && my <= .75 * sy +30 && mode == 0)
+       if(mx >= .75 * sx  && mx <= .75 * sx +200*scale_x && my >= .75 * sy && my <= .75 * sy +30*scale_y )
 		{
 			mode = 1;
 			mode_point = 0;
@@ -400,21 +433,27 @@ void iMouse(int button, int state, int mx, int my)
 
         /***    for tips    ***/
 
-        else if(mx>=20 && mx<= 32 && my>=(sy-32) && my<=(sy-20)){
+        else if(mx>=20*scale_x && mx<= 32*scale_x && my>=(sy-32*scale_y) && my<=(sy-20*scale_y)){
             mode = 0;
             mode_point = 0;
             tips_mode = (!tips_mode);
         }
-        
+        /***  for color mode  ***/
+        /*
+        else if( mx>=sx -15  && mx<=sx -3 && my >= .75 *sy + 10 && my <= .75 *sy + 22){
+            mode = 0;
+            mode_point = 0;
+            mode_color =1;
+        }
+    */
         else {
             mode = 0;
             mode_point = 1;
-            tips_mode = 0;
+            mode_color =0;
         }
     }
     if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
     {
-        //place your codes here
        mode_point = 0;
 
     }
@@ -430,16 +469,15 @@ void iKeyboard(unsigned char key)
     int i;
 	if(mode == 1)
 	{
-        if(key == '\r')     // \r =enter key
+		if(key == '\r')     // \r =enter key
 		{
-
 			draw_mode = 1;
+			mode = 1;
 			strcpy(str2, str);
-            		make_point();
-
+			make_point();
 		}
 		else if(key == '\b'){
-            		if(len != 0) str[--len]='\0';
+			if(len != 0) str[--len]='\0';
 		}
 		else
 		{
@@ -512,13 +550,14 @@ void iSpecialKeyboard(unsigned char key)
 }
 
 void my_anim(){
-
+    if(draw_mode){
     x=t;
-    while( (f11(t)) == NULL ) t+=2;
-    y = f11(t) ;
-    t+=2;
+    while( (f11(t)) == NULL ) t+=20;
+    y = f11(t);
+    //y = f12(t);   //need to fix;
+    t+=10;
     if(t>=sx) t=0;
-
+    }
 
 }
 
@@ -527,7 +566,7 @@ int main()
     //place your own initialization codes here.
 
     p1 = (point *)malloc(sizeof(point) * p_size);
-    if(!p1 )
+    if(!p1)
     {
         perror("malloc");
         exit(EXIT_FAILURE);
@@ -536,7 +575,6 @@ int main()
     len = 0;
 	mode = 0;
 	str[0]= '\0';
-
 	iSetTimer(1,my_anim);
 
     iInitialize(sx, sy, " Real Remainder ");
