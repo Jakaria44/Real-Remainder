@@ -1,33 +1,162 @@
 # include "iGraphics.h"
 #include <math.h>
 #include<string.h>
+#include <stdlib.h>
 
-int r = 15,dx,dy;
+
+
+int r = 15;
+int len;
+int mode;
+char str[100], str2[100] , tok[100][100];
+
 double xa[]={100, 100, 300};
 double ya[]={100, 0, 150};
-char  str[]="Jakaria", position[100];
-double x = 840, y =360 , px=0, py=0 ,t=0;
-int  tri = 1,mode_point = 0, mode_axis = 1 , mode_grid = 1;
+
+char  position[100];
+double x = 840, y =360 , px = 0, py = 0 ,t = 0;
+int  tri = 4;
 
 double sx = 1280, sy = 720;
+double point_array_size = sx/0.05;
+int p_size = point_array_size;
+
+/*****   modes     *****/
+
+int mode_point = 0,
+    mode_axis = 1 ,
+    mode_grid = 1,
+    draw_mode = 0,
+    tips_mode = 0,
+    mode_color=0 ;
+
 
 /*****              general equation        *****/
-/*****  ax2 + by2 + hxy + gx + fy + c = 0   *****/
+/*****  ax^2 + by^2 + hxy + gx + fy + c = 0   *****/
 
-double a=01,
-       b=-01,
-       c=0,
-       f=0,
-       g=0,
-       h=0,
-       D;          // discriminant: D = (h*i-f )*(h*i-f )- 4 * b * ( a * i*i + g * i + c);
+double  a =   0,
+        b =   0 ,
+        c =   0,
+        f =   0,
+        g =   0 ,
+        h =   0 ,
+        D;          // discriminant: D = (h*i-f )*(h*i-f )- 4 * b * ( a * i*i + g * i + c);
+
+char general[][10]= {"x^2","y^2", "xy","x", "y"};
 
 
+typedef struct point{
+    double x;
+    double y1;
+    double y2;
+} point;
+
+point *p1 = NULL;
+
+int myatoi(char* str)
+{
+	int res = 0, sign = 1;
+	for (int i = 0; str[i] != '\0'; ++i)
+    {
+
+        if(str[i]==' ') continue;
+        if(str[i]== '-') sign = -1;
+        else
+		    res = res * 10 + str[i] - '0';
+    }
+	return res*sign;
+}
+
+int strfind(char a[], char s[])
+{
+    int la, ls, j = 0;
+
+    la = strlen(a);
+    ls = strlen(s);
+    if(la < ls) return -1;
+
+    for(int i = 0 ; i < la; i++){
+
+        if(a[i] == s[j]) j++;
+
+        else j = 0;
+        if( j == ls) return i - ls + 1;
+    }
+    return -1;
+}
+
+void refresh_neg(char *str){
+    int ls = strlen(str), m= 0, n ;
+    while (m<ls){
+        if(str[m]=='-'){
+            for(n = ls; n >m ; --n )
+                str[n] = str[n-1];
+            str[m] = '+';
+            str[++ls] = '\0';
+            m++;
+        }
+        m++;
+    }
+}
+
+//extracts the values of a,b,c,g,f,h from str[]
+
+void co_eff(char *str){
+
+    int k = 0;
+	char* token = strtok(str,"+"),tok[100][100];
+	while (token != NULL) {
+        strcpy(tok[k++], token);
+		token = strtok(NULL, "+");
+	}
+    int  j = 0,i = 0,  pos;
+    do {
+        j = 0;
+        do  {
+
+            pos = strfind(tok[i], general[j]);
+            if( pos == -1) j++;
+        } while(pos == -1 && j < 5);
+
+        char st[50] ;
+        if(pos == -1) strcpy(st, tok[i] );
+        else {
+            strncpy(st,tok[i], pos);
+            st[pos]='\0';
+        }
+        if(pos != -1 && myatoi(st) == 0) strcat(st,"1");
+
+        switch (j)
+        {
+        case 0: a = myatoi(st);
+            break;
+        case 1: b = myatoi(st);
+            break;
+        case 2: h = myatoi(st);
+            break;
+        case 3: g = myatoi(st);
+            break;
+        case 4: f = myatoi(st);
+            break;
+        default: c = myatoi(st);
+            break;
+        }
+        j = 0;
+        pos = strfind(tok[++i], general[j]);
+    }   while( i < k );
+
+}
+
+
+double discriminant(double i)
+{
+    return (h*i-f )*(h*i-f )- 4 * b * ( a * i*i + g * i + c);
+}
 
 void draw_grid()
 {
 
-    iSetColor(25,25,75);
+    iSetColor(25,75,25);
     for(int i = 1; i < sx / 2; i+=20){
         iLine(0, sy/2 + i, sx, sy/2+i);
         iLine(0, sy/2 - i, sx, sy/2-i);
@@ -39,22 +168,9 @@ void draw_grid()
 
 void draw_axes()
 {
-    iSetColor(25,200,200);
+    iSetColor(250,250,250);
     iLine(0, sy/2 , sx, sy/2);
     iLine(sx/2, 0, sx/2, sy);
-}
-
-void draw_st_line()
-{
-
-    double m=1, c= 0;  //user input.. can also be written  ax + by + c =0;
-    iSetColor(20,255,250);
-    for(float j = 0; j <= sx; j+=0.25){
-        double gy = (sy/2) + m * (j - (sx / 2)) + c;
-            iPoint(j, gy,1);
-            gy = (sy/2) - m * (j - (sx / 2)) + c;
-            iPoint(j, gy,1);
-    }
 }
 
 
@@ -71,35 +187,7 @@ void pos_from_int()
     strcat(position, pos_temp);
 }
 
-void draw_polynomial()
-{
-    double
-    qa = 0,
-    qb = 0.025,
-    qc = 0,
-    qd = 0;
 
-    iSetColor(20,175,250);
-    for(float j = 0; j<sx; j+=1){
-        //double gy = sy / 2 + qa * pow(j-sx/2, 3) + qb *  pow((j-sx/2), 2) + qc * pow(j- sx / 2 , 1) + qd  ;
-        double gy = sy / 2 +10*sin((j-sx/2)*180/3.14159);
-        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
-    }
-}
-
-void draw_parabola()
-{
-    double a=50;   // will be  modified
-    for(float j = 0; j <= sx; j+=0.15){
-        double gy = sy / 2 + sqrt(4 * a * ( j - sx / 2 + 640 ));
-        //double gy = sy / 2 + pow((j-sx/2),2)*cos(1/(j-sx/2));
-        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1.5);
-        gy = sy / 2 - sqrt(4  * a * ( j- sx / 2 + 640));
-        if( gy >= 0 && gy <= sy)    iPoint(j , gy , 1);
-
-    }
-
-}
 
 void trace_point()
 {
@@ -135,110 +223,12 @@ void trace_point()
 }
 
 
-double f_tri(double aa, int a)
-{
-    switch (a)
-    {
-    case 1:    return sin(aa);
-
-    case 11:   return asin(aa);                                                    // arc sin x
-
-    case 2:    return cos(aa);
-
-    case 22:   return acos(aa);
-
-    case 3:    return tan(aa);
-
-    case 33:   return atan(aa);
-
-    case 4:    return 1 / tan(aa);                                                     //cot(aa)
-
-    case 44:   return atan(1/aa);
-
-    case 5:    return 1/cos(aa);                                                           //sec(aa)
-
-    case 55:   return acos(1/aa);
-
-    case 6:    return 1/sin(aa);                                                           //cosec(aa)
-
-    case 66:   return asin(1/aa);
-
-    }
-}
-
-double f_trigon(double x, int a){           // a: checking function (sin or cos or ...)
-        double tri_x , tri_y ;
-
-        tri_x = (x-sx/2)*3.1415926535/180;
-        tri_y = sy / 2 + 100 * f_tri(tri_x, a);
-
-        if(tri_y > sy || tri_y < 0) return NULL;
-        return tri_y;
-
-}
-void draw_trigon(int a)
-{
-
-    iSetColor(20,175,250);
-    for(double i = 0 ;i < sx; i+=.5)
-    {
-        double tri_y = f_trigon(i,a);
-        if(tri_y != NULL)
-        iPoint(i, tri_y, 1);
-    }
-
-}
-
-void  tri_function_text(int a)
-{
-
-    switch (a)
-    {
-    case 1: iText(50, 540, "y = sin (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 11:    iText(50,540, "y = arc sin (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 2:     iText(50, 540 , "y = cos (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 22:     iText(50, 540 , "y = arc cos (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 3:     iText(50, 540, "y = tan (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 33:     iText(50, 540 , "y = arc tan (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 4:     iText(50, 540 , "y = cot (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 44:     iText(50, 540 , "y = arc cot (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 5:     iText(50, 540 , "y = sec (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 55:     iText(50, 540 , "y = arc sec (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 6:     iText(50, 540 , "y = cosec (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 66:     iText(50, 540 , "y = arc cosec (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    }
-
-}
 
 double arith_pos(double x)
 {
     double fy;
+    D = discriminant(x);
     if(b !=0){
-
         fy = ( -(h * x + f ) + sqrt(D)) / ( 2 * b);
         return fy;
     }
@@ -248,6 +238,7 @@ double arith_pos(double x)
 }
 double arith_neg(double x)
 {
+    D = discriminant(x);
     double fy;
     if(b !=0){
 
@@ -259,20 +250,82 @@ double arith_neg(double x)
     }
 }
 
-void draw_conic()
+double f11(double i){
+    i-= sx/2;
+    D = discriminant(i);
+    if( D < 0) return NULL;
+    return sy / 2 + arith_neg(i );
+}
+
+double f12(double i){
+    i-= sx/2;
+    D = discriminant(i);
+    if( D < 0) return NULL;
+    return sy / 2 + arith_pos(i );
+}
+
+void drawTextBox()
 {
+	iSetColor(50, 150, 150);
+    if(mode ) iSetColor(250,250,250);
+	iRectangle(.75 * sx , .75 * sy , sx*0.25-20, 30);
+}
 
-    for(double i =- sx / 2; i < sx / 2; i+=.1){
-        D= (h*i-f )*(h*i-f )- 4 * b * ( a * i*i + g * i + c);
-
-        if( D < 0) continue;
-        double conic_y;
-        conic_y = sy / 2 + arith_neg(i );
-        if(conic_y < sy || conic_y > 0) iPoint( i +sx / 2 , conic_y, 1);
-        conic_y = sy/2 + arith_pos(i );
-        if(conic_y < sy || conic_y > 0) iPoint( i +sx / 2, conic_y, 1);
+void inTextBox(){
+    if(!strlen(str))
+	{
+        iSetColor(155, 155, 155);
+		iText(.75 * sx + 10 ,.75 * sy + 10 ,"Enter equation here..",GLUT_BITMAP_HELVETICA_18);
     }
+	else {
+		iSetColor(255, 255, 255);
+		iText(.75 * sx + 10 ,.75 * sy + 10 , str,GLUT_BITMAP_HELVETICA_18);
+        iText(sx-65, .75 * sy + 10," = 0",GLUT_BITMAP_HELVETICA_18);
+	}
+}
 
+
+
+
+void make_point(){
+
+    double j = 0;
+    int i ;
+    refresh_neg(str2);
+    co_eff(str2);
+
+    for(i = 0; i < p_size; i++){
+        p1[i].x = j;
+        p1[i].y1 = f11(j);
+        p1[i].y2= f12(j);
+        j+=0.05;
+    }
+}
+
+void draw_curve(){
+
+    for(int i = 0; i < p_size; i++){
+        if(p1[i].y1 != NULL)    iPoint(p1[i].x, p1[i].y1, 0.9 );
+        if(p1[i].y2 != NULL)    iPoint(p1[i].x, p1[i].y2, 0.9 );
+    }
+}
+void tips(){
+
+    iSetColor(50,200,250);
+    if(tips_mode == 1){
+
+        iText(20,sy-45,">press 'g' to show or hide GRIDs",GLUT_BITMAP_HELVETICA_12);
+        iText(20,sy-65,">press 'a' to show or hide AXES",GLUT_BITMAP_HELVETICA_12);
+        iText(20,sy-85,">press right mouse click to hide point tracing",GLUT_BITMAP_HELVETICA_12);
+        iText(20,sy-105,">Click anywhere in the grid to show point tracing",GLUT_BITMAP_HELVETICA_12);
+        iSetColor(255,255,255);
+        iFilledRectangle(20,sy-32,12,12);
+    }
+    else {
+        iSetColor(255,255,255);
+        iText(40,sy-32,"Click here for tips",GLUT_BITMAP_HELVETICA_18);
+        iRectangle(20,sy-32,12,12);
+    }
 }
 
 /*
@@ -283,45 +336,13 @@ void iDraw()
     //place your drawing codes here
     iClear();
 
-    /*
-    iCircle(300,320,20);/*
-    iSetColor(25,255,200);
-    iFilledRectangle(x+20,y+20,100,100);
-    iLine(300,300,545,515);
-    iSetColor(25,205,255);
-    iText(10,10,"click to go",GLUT_BITMAP_HELVETICA_18);
-    iFilledPolygon(xa, ya, 3);
-
-    iShowBMP2(500,564,"wheel.bmp", 0xffffff);
-    iLine(300,300,500,300);
-    //iRectangle(375,320,70,20);
-    double xa[]={375,400,450,390};
-    double ya[]={320,175,175,320};
-    iPolygon(xa, ya, 4);
-    iLine(340,500,300,325);*/
-
     /**draw grids*/
 
     if(mode_grid)  draw_grid();
 
-    if(mode_axis)draw_axes();
+    if(mode_axis) draw_axes();
 
-    //draw_st_line();
-
-    //draw_parabola();
-
-    //draw_polynomial(); //   (3 degree)
-
-    draw_trigon(tri);
-    tri_function_text(tri);
-    // porer egulo modify korte hobe..
-
-
-    iSetColor(25,225,200);
-    iEllipse(sx/2, sy/2,400,250);
-    iSetColor(25,225,200);
-    iEllipse(sx/2, sy/2,250,400);
-    iSetColor(125,255,200);
+   
     iCircle(x,y,75);
     iSetColor(10,100,255);
 
@@ -329,27 +350,18 @@ void iDraw()
     /** point tracing **/
     trace_point();
 
-    /** text */
-    iSetColor(50,200,250);
-    iText(20,10,"press 'g' to show or hide GRIDs",GLUT_BITMAP_HELVETICA_18);
-    iText(20,50,"press 'a' to show or hide AXES",GLUT_BITMAP_HELVETICA_18);
-    iText(20,85,"press right mouse click to hide point tracing",GLUT_BITMAP_HELVETICA_18);
-    iText(20,120,"Pess click anywhere in the grid to show point tracing",GLUT_BITMAP_HELVETICA_18);
+    tips();
 
-    /**********
-        y = sin(5x)
-        5x
-
-
-    **********/
     iFilledCircle(x,y,10);
 
-    iSetColor(25,155,200);
-    draw_conic();
+    drawTextBox();
+    inTextBox();
+
+
+    iSetColor(25,225,200);
+    if(draw_mode ==1) draw_curve();
 
 }
-
-
 
 /*
 	function iMouseMove() is called when the user presses and drags the mouse.
@@ -372,21 +384,37 @@ void iMouse(int button, int state, int mx, int my)
     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
         //place your codes here
-        //printf("x = %d, y= %d\n",mx,my);
-        //x += 5;
-        // y += 5;
+       
 
        px=mx;
        py=my;
-       mode_point = 1;
+       if(!mode)    mode_point = 1;
 
 
+       if(mx >= .75 * sx  && mx <= .75 * sx +200 && my >= .75 * sy && my <= .75 * sy +30 && mode == 0)
+		{
+			mode = 1;
+			mode_point = 0;
+		}
+
+
+        /***    for tips    ***/
+
+        else if(mx>=20 && mx<= 32 && my>=(sy-32) && my<=(sy-20)){
+            mode = 0;
+            mode_point = 0;
+            tips_mode = (!tips_mode);
+        }
+        
+        else {
+            mode = 0;
+            mode_point = 1;
+            tips_mode = 0;
+        }
     }
     if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
     {
         //place your codes here
-        //x -= 5;
-        //y -= 5;
        mode_point = 0;
 
     }
@@ -398,8 +426,30 @@ void iMouse(int button, int state, int mx, int my)
 */
 void iKeyboard(unsigned char key)
 {
+    /***    taking input   ****/
+    int i;
+	if(mode == 1)
+	{
+        if(key == '\r')     // \r =enter key
+		{
 
-    if(key == 'q')
+			draw_mode = 1;
+			strcpy(str2, str);
+            		make_point();
+
+		}
+		else if(key == '\b'){
+            		if(len != 0) str[--len]='\0';
+		}
+		else
+		{
+			str[len] = key;
+			len++;
+		}
+	}
+
+
+    else if(key == 'q')
     {
         exit(0);
     }
@@ -410,16 +460,6 @@ void iKeyboard(unsigned char key)
     else if(key == 'r')
     {
         iResumeTimer(0);
-    }
-    else if(key == '+')
-    {
-        dx++;
-        dy++;
-    }
-    else if(key == '-')
-    {
-        dx--;
-        dy--;
     }
     else if(key == 'g')
         {
@@ -466,35 +506,40 @@ void iSpecialKeyboard(unsigned char key)
         x-=10;
     }
 
+
+
     //place your codes for other keys here
 }
 
 void my_anim(){
 
     x=t;
-    y = f_trigon(t,tri) ;
+    while( (f11(t)) == NULL ) t+=2;
+    y = f11(t) ;
     t+=2;
     if(t>=sx) t=0;
 
-    /*
-	x += dx;
-	y += dy;
 
-	if(x > 1280 || x < 0)dx = -dx;
-	if(y > 720  || y < 0)dy = -dy;
-        */
 }
 
 int main()
 {
     //place your own initialization codes here.
-    /*iSetTimer(10 ,my_anim);
-	dx = 10;
-	dy = 10;*/
+
+    p1 = (point *)malloc(sizeof(point) * p_size);
+    if(!p1 )
+    {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+
+    len = 0;
+	mode = 0;
+	str[0]= '\0';
 
 	iSetTimer(1,my_anim);
 
-    iInitialize(sx, sy, " Project 1126 ");
+    iInitialize(sx, sy, " Real Remainder ");
     return 0;
 }
 
