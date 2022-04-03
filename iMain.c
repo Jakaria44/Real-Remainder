@@ -3,8 +3,8 @@
 #include<string.h>
 #include <windows.h>
 
-double sx = 1280,
-        sy = 720,
+double sx = 1000,
+        sy = 800,
         scale_x = sx / 1280.0,
         scale_y = sy/720.0 ;
 int r = 15, t = 0;
@@ -298,12 +298,9 @@ void inTextBox(){
 	}
 }
 /*
-
 void f_project(){
 	FILE *fp;
-
 	fclose(fp);
-
 }
 */
 
@@ -375,12 +372,13 @@ void iDraw()
     if(mode_grid)  draw_grid();
 
     if(mode_axis) draw_axes();
-	
+
     if(y != NULL && x <= sx && draw_mode ){
         iCircle(x,y,70);
+        iSetColor(0,255,200);
         iFilledCircle(x,y,7);
     }
-	
+
     iSetColor(10,100,255);
 
 
@@ -419,7 +417,7 @@ void iMouse(int button, int state, int mx, int my)
     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
         //place your codes here
-        
+
        px=mx;
        py=my;
        if(!mode)    mode_point = 1;
@@ -555,7 +553,7 @@ void my_anim(){
     while( (f11(t)) == NULL ) t+=20;
     y = f11(t);
     //y = f12(t);   //need to fix;
-    t+=10;
+    t+=4;
     if(t>=sx) t=0;
     }
 
@@ -580,4 +578,3 @@ int main()
     iInitialize(sx, sy, " Real Remainder ");
     return 0;
 }
-
