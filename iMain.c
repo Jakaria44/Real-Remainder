@@ -3,8 +3,12 @@
 #include<string.h>
 #include <windows.h>
 
-double sx = 1280,
-        sy = 720,
+#define W 1280
+#define H 720
+
+
+double sx = W,
+        sy = H,
         scale_x =  sx / 1280.0,
         scale_y =  sy/720.0 ;
 
@@ -29,24 +33,24 @@ box b1 = { .38* sx,
             home_y - box_height * 3 * 1.5 ,
             260 * scale_x,
             box_height
-    }
+            }
     ;
 
-int r = 15, t = 0, timer = 1;
-int n_color = 0;
 const int N = 5; // number of equations.
+
+int r = 15, t = 0, timer = 1;
+int n_color = 0, l_name = 0;
 int len[N+1], parallel_y[N+1] , g_color[N+1];
 int count_eqn = 1 ;
-char str[100], str11[N][100], zx[10] ;
+char str[100], str11[N+1][100], zx[10] , f_name[50];
 
 char  position[100];
-double x = 840 *scale_x , y =360*scale_x , px , py  ;
-
-//x, y moving circle.
-int  tri = 4;
+double x = 840 *scale_x , y =360*scale_x , px , py  ;       //x, y moving circle.
 
 double point_array_size = (sx/0.05 > sy / 0.05)? (sx/0.05): (sy/0.05);
 int p_size = point_array_size;
+
+double  time_anim_2 = .000001, time_anim_1= 1;
 
 /*****   modes     *****/
 
@@ -62,7 +66,11 @@ int mode_point = 0,
     mode_eqn = 0,
     diff_color_mode = 0,
     show_mode[N+1],
-    show_anim_mode = 0;
+    show_anim_mode = 0,
+    save_mode = 0,
+    open_mode=0,
+    in_fname = 0,
+    open_fname = 0
     ;
 
 
@@ -111,6 +119,7 @@ color col[]={
 double col_x = .85 * sx, col_y = 0.75 * sy +50 *scale_y;
 
 
+
 /***for ellastic collision  ***/
 
 int n_collision = 0,
@@ -129,19 +138,20 @@ char n_col[1000], text[10000], m1s[15], m2s[15], v1s[15], v2s[15] , v10s[15], v2
 double x0 =200, x1 =300, x2 = 575,
         v1 = 0 ,v2= 2,
         y_col = 200,
-
-
-
         a1 = 75* scale_x* scale_y, a2= a1 ,
         k1, k2,
-        time_anim_2 = .000001,
-        time_anim_1= 1,
         m1 =1,
         m2=1;
+
+void opening();
+void saving();
+void file_project();
+void save_project();
+void open_project();
 void restart_collision();
 void mode_change_collision(int ,int, int, int);
 double dist(int, int, double, double);
-void clear();
+void clear();         // for curve
 void refresh_string(char *, int);
 void reset();       //for elastic collision
 double myatoi(char* str);
@@ -154,17 +164,12 @@ void draw_grid();
 void draw_axes();
 void pos_from_int();
 void trace_point();
-double f_tri(double aa, int a);
-double f_trigon(double x, int a);
-void draw_trigon(int a);
-void  tri_function_text(int a);
 double arith_pos(double x);
 double arith_neg(double x);
 double f11(double i);
 double f12(double i);
 void drawTextBox();
 void inTextBox();
-void f_project();
 void make_point();
 void set_color(int n);
 void draw_curve();
@@ -437,7 +442,7 @@ void draw_axes()
 
 void pos_from_int()
 {
-    int intpos_x= px-sx/2.0, intpos_y = py - sy/2.0; // origin has been transferred
+    int intpos_x= (px-sx/2.0)/z, intpos_y =( py - sy/2.0)/z; // origin has been transferred
 
     char pos_temp[]="x = ";
     strcpy(position, pos_temp);
@@ -484,103 +489,6 @@ void trace_point()
 }
 
 
-double f_tri(double aa, int a)
-{
-    switch (a)
-    {
-    case 1:    return sin(aa);
-
-    case 11:   return asin(aa);                                                    // arc sin x
-
-    case 2:    return cos(aa);
-
-    case 22:   return acos(aa);
-
-    case 3:    return tan(aa);
-
-    case 33:   return atan(aa);
-
-    case 4:    return 1 / tan(aa);                                                     //cot(aa)
-
-    case 44:   return atan(1/aa);
-
-    case 5:    return 1/cos(aa);                                                           //sec(aa)
-
-    case 55:   return acos(1/aa);
-
-    case 6:    return 1/sin(aa);                                                           //cosec(aa)
-
-    case 66:   return asin(1/aa);
-
-    }
-}
-
-double f_trigon(double x, int a){           // a: checking function (sin or cos or ...)
-        double tri_x , tri_y ;
-
-        tri_x = (x-sx/2)*3.1415926535/180;
-        tri_y = sy / 2 + 100 * f_tri(tri_x, a);
-
-        //if(tri_y > sy || tri_y < 0) return NULL;
-        return tri_y;
-
-}
-void draw_trigon(int a)
-{
-
-    iSetColor(20,175,250);
-    for(double i = 0 ;i < sx; i+=.5)
-    {
-        double tri_y = f_trigon(i,a);
-        if(tri_y != NULL)
-        iPoint(i, tri_y, 1);
-    }
-
-}
-void  tri_function_text(int a)
-{
-
-    switch (a)
-    {
-    case 1: iText(50, 540, "y = sin (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 11:    iText(50,540, "y = arc sin (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 2:     iText(50, 540 , "y = cos (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 22:     iText(50, 540 , "y = arc cos (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 3:     iText(50, 540, "y = tan (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 33:     iText(50, 540 , "y = arc tan (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 4:     iText(50, 540 , "y = cot (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 44:     iText(50, 540 , "y = arc cot (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 5:     iText(50, 540 , "y = sec (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 55:     iText(50, 540 , "y = arc sec (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 6:     iText(50, 540 , "y = cosec (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    case 66:     iText(50, 540 , "y = arc cosec (x)",GLUT_BITMAP_HELVETICA_18);
-            return ;
-
-    }
-
-}
 
 double arith_pos(double x)
 {
@@ -686,15 +594,6 @@ void inTextBox(){
 
 
 }
-/*
-
-void f_project(){
-	FILE *fp;
-
-	fclose(fp);
-
-}
-*/
 
 
 void make_point(){
@@ -740,8 +639,8 @@ void make_point(){
 
 void set_color(int n){
     iSetColor(col[n].R, col[n].G, col[n].B);
-
 }
+
 void draw_curve_index(int j){
     set_color( g_color[j]);
     if( parallel_y[j]== 1){
@@ -774,10 +673,10 @@ void tips(){
     iSetColor(50,200,250);
     if(tips_mode == 1){
 
-        iText(20*scale_x  ,sy-45 *scale_y ,">press 'g' to show or hide GRIDs",GLUT_BITMAP_HELVETICA_18);
-        iText(20*scale_x,sy-65 *scale_y,">press 'a' to show or hide AXES",GLUT_BITMAP_HELVETICA_18);
-        iText(20*scale_x,sy-85 *scale_y,">press right mouse click to hide point tracing",GLUT_BITMAP_HELVETICA_18);
-        iText(20*scale_x,sy-105 *scale_y,">Click anywhere in the grid to show point tracing",GLUT_BITMAP_HELVETICA_18);
+        iText(20*scale_x  ,sy-45 *scale_y ,">Press 'g' to show or hide GRIDs",GLUT_BITMAP_HELVETICA_18);
+        iText(20*scale_x,sy-65 *scale_y,">Press 'a' to show or hide AXES",GLUT_BITMAP_HELVETICA_18);
+        iText(20*scale_x,sy-85 *scale_y,">Right mouse click to hide point tracing",GLUT_BITMAP_HELVETICA_18);
+        iText(20*scale_x,sy-105 *scale_y,">Left Click  to show point tracing",GLUT_BITMAP_HELVETICA_18);
         iSetColor(255,255,255);
         iFilledRectangle(22*scale_x, sy-30*scale_y, 8*scale_x, 8*scale_y);
     }
@@ -790,8 +689,6 @@ void tips(){
 
 void draw_diff_color()
 {
-
-
     iSetColor(0,0,0);
     iFilledRectangle(col_x-10*scale_x , col_y-10*scale_y , 170 * scale_x, 120 *scale_y);
 
@@ -835,6 +732,7 @@ void ellastic_collision()
     if(in_v1)   iFilledRectangle( 446 * scale_x,    36 * scale_y,   93 * scale_x,  38 * scale_y);
     if(in_v2)   iFilledRectangle( 846 * scale_x,    36 * scale_y,   93 * scale_x,  38 * scale_y);
 
+
     iSetColor(255,255,255);
     iFilledRectangle( 450 * scale_x,    90 * scale_y,   85 * scale_x,   30 * scale_y);        //m1
     iFilledRectangle( 450 * scale_x,    40 * scale_y,   85 * scale_x,   30 * scale_y);        //v1
@@ -847,6 +745,7 @@ void ellastic_collision()
     iFilledRectangle( 50 * scale_x,     400 * scale_y,  85 * scale_x,   30 * scale_y);        //reset
     iFilledRectangle( 50 * scale_x,     450 * scale_y,  85 * scale_x,   30 * scale_y);        // restart collision
 
+    /** units  **/
 
     iSetColor(255,255,255);
     iText(545 * scale_x, 100* scale_y,   "kg", GLUT_BITMAP_HELVETICA_18);
@@ -854,39 +753,43 @@ void ellastic_collision()
     iText(945 * scale_x, 100* scale_y,   "kg", GLUT_BITMAP_HELVETICA_18);
     iText(945 * scale_x, 45* scale_y,    "m/s", GLUT_BITMAP_HELVETICA_18);
 
+    /** showing values  **/
+
     iSetColor(0,0,0);
     iText(465 * scale_x, 100* scale_y,   m1s, GLUT_BITMAP_HELVETICA_18);
     iText(455 * scale_x, 45* scale_y,    v1s, GLUT_BITMAP_HELVETICA_18);
     iText(865 * scale_x, 100* scale_y,   m2s, GLUT_BITMAP_HELVETICA_18);
     iText(855 * scale_x, 45* scale_y,    v2s, GLUT_BITMAP_HELVETICA_18);
 
-    iText(60 * scale_x, 308* scale_y,"PAUSE",GLUT_BITMAP_HELVETICA_18);
-
     if(animation_2 == -1){
         iText(60* scale_x,   358* scale_y,     "START",GLUT_BITMAP_HELVETICA_18);
         iPauseTimer(1);
-
     }
     else iText(57 * scale_x, 358 * scale_y,"RESUME",GLUT_BITMAP_HELVETICA_18);
     iText(60 * scale_x, 408 * scale_y,"RESET",GLUT_BITMAP_HELVETICA_18);
     iText(53 * scale_x, 458 * scale_y,"RESTART",GLUT_BITMAP_HELVETICA_18);
+    iText(60 * scale_x, 308* scale_y,"PAUSE",GLUT_BITMAP_HELVETICA_18);
 
 
+    /** axis  **/
 
     iSetColor(0,255,200);
     iLine(x0 * scale_x,     y_col * scale_y,        sx - 50 * scale_x,  y_col * scale_y);
     iLine(x0 * scale_x,     y_col * scale_y,        x0 * scale_x,       sy- 50 * scale_y);
+
+    /** draw boxes  **/
 
     iSetColor(23, 227, 196);
     iFilledRectangle(x1 * scale_x , y_col * scale_y, a1 * scale_x,a1 * scale_y);
     iSetColor(0,200,255);
     iFilledRectangle(x2  * scale_x, y_col * scale_y, a2 * scale_x,a2 * scale_y);
 
+    /** count collision **/
+
     sprintf(n_col,"%d",n_collision );
     iSetColor(255,255,255);
     iText(sx / 2, sy* .75 ,n_col,GLUT_BITMAP_HELVETICA_18);
-
-    iText(sx * .3, sy * .75, "No. of Collisions:",GLUT_BITMAP_HELVETICA_18);
+    iText(sx * .3, sy * .75, "No. of Colisions:",GLUT_BITMAP_HELVETICA_18);
 
     iSetColor(10,10,10);
     iText( x1 + .38*a1 *scale_x, y_col + .46 * a1 * scale_y, "m1", GLUT_BITMAP_HELVETICA_18);
@@ -894,7 +797,85 @@ void ellastic_collision()
 
 
 }
+    /** opens a file taking filname from user  **/
 
+void opening(){
+    FILE *fp;
+    int cc, i = 1, j  = 0;
+    strcat(f_name, ".txt");
+    fp = fopen(f_name, "r");
+    fscanf(fp, "%d ", &count_eqn);
+    if(fp == NULL)  exit(0);
+     while (!feof(fp)) {
+        fscanf(fp, "%s %d ",  str11[i], &g_color[i]);
+        len[i]= strlen(str11[i]);
+        mode_eqn = i;
+        draw_mode = 1;
+        show_mode[i]= 1;
+        make_point();
+        i++;
+        j=0;
+        if( i== count_eqn) break;
+
+    }
+    fclose(fp);
+
+}
+void open_project(){
+    iSetColor(255,255,255);
+    iFilledRectangle(90*scale_x,580*scale_y,200*scale_x,30*scale_y);
+
+    iSetColor(10,10,10);
+    if(!strlen(f_name))
+        iText( 95*scale_x,590*scale_y,"Enter filename: ",GLUT_BITMAP_HELVETICA_18);
+    else
+        iText( 95*scale_x,590*scale_y,  f_name, GLUT_BITMAP_HELVETICA_18);
+
+}
+
+/** saves a file taking filname from user  **/
+
+void saving(){
+    FILE *fp;
+    strcat(f_name, ".txt");
+    fp = fopen(f_name, "w");
+    if(fp == NULL)  exit(0);
+    fprintf(fp, "%d\n", count_eqn);
+    for(int i = 1; i <= count_eqn; i++){
+        fprintf(fp, "%s %d\n", str11[i], g_color[i]);
+    }
+    fclose(fp);
+}
+
+void save_project()
+{
+    iSetColor(255,255,255);
+    iFilledRectangle(90*scale_x,540*scale_y,200*scale_x,30*scale_y);
+
+    iSetColor(10,10,10);
+    if(!strlen(f_name))
+        iText( 95*scale_x,550*scale_y,"Enter filename: ",GLUT_BITMAP_HELVETICA_18);
+    else
+        iText( 95*scale_x,550*scale_y,f_name,GLUT_BITMAP_HELVETICA_18);
+
+}
+
+void file_project(){
+    iSetColor(255,255,255);
+
+    /**open  **/
+    iFilledRectangle(20*scale_x,580*scale_y,60*scale_x,30*scale_y);
+
+    /** save  **/
+    iFilledRectangle(20*scale_x,540*scale_y,60*scale_x,30*scale_y);
+
+    iSetColor(10,10,10);
+    iText(25,550,"SAVE",GLUT_BITMAP_HELVETICA_18 );
+    iText(25,590,"OPEN",GLUT_BITMAP_HELVETICA_18 );
+
+    if( save_mode)  save_project();
+    if( open_mode)  open_project();
+}
 
 void graphing_calc()
 {
@@ -902,6 +883,7 @@ void graphing_calc()
 
     if(mode_axis) draw_axes();
 
+    file_project();
 
     iSetColor(10,100,255);
 
@@ -920,6 +902,7 @@ void graphing_calc()
     drawTextBox();
     inTextBox();
 
+    /**zooming  **/
 
     iSetColor(255,255,255);
     iText(100*scale_x,15*scale_y,"ZOOM : ", GLUT_BITMAP_HELVETICA_18);
@@ -928,7 +911,9 @@ void graphing_calc()
     iFilledRectangle(275*scale_x,0,30*scale_x,40*scale_y);          //-
     iFilledRectangle(315*scale_x,5*scale_y,70*scale_x,30*scale_y);      // reset
 
-    iText(215*scale_x,15*scale_y,zx,GLUT_BITMAP_HELVETICA_18 );
+    sprintf(zx, "%.3lf", z);
+    strcat(zx, "x");
+    iText(215*scale_x,15*scale_y,zx,GLUT_BITMAP_HELVETICA_18 );     //zx : 1.000x or something
 
     iSetColor(0,0,0);
     iText(195*scale_x,15*scale_y,"-",GLUT_BITMAP_HELVETICA_18 );
@@ -936,8 +921,7 @@ void graphing_calc()
     iText(322*scale_x,15*scale_y,"RESET", GLUT_BITMAP_HELVETICA_18);
 
 
-    sprintf(zx, "%.3lf", z);
-    strcat(zx, "x");
+
     iSetColor(25,225,200);
     if(draw_mode ==1) draw_curve();
     if(diff_color_mode) draw_diff_color();
@@ -949,13 +933,16 @@ void graphing_calc()
 }
 
 void homepage(){
+
+    /** title  **/
     iSetColor(103, 232, 235);
-    if(sx== 1280) iShowBMP(0,0, "title.bmp");
+    if( sx == 1280) iShowBMP(0,0, "title.bmp");
     else {
-	    if(sx>=800) iText(sx *.42, home_y, "Real Remainder", GLUT_BITMAP_TIMES_ROMAN_24 );
-    	    else if(sx<600 ) iText(sx *.42, home_y, "Real Remainder", GLUT_BITMAP_9_BY_15 );
+        if(sx>=800) iText(sx *.42, home_y, "Real Remainder", GLUT_BITMAP_TIMES_ROMAN_24 );
+        else  iText(sx *.42, home_y, "Real Remainder", GLUT_BITMAP_9_BY_15 );
     }
-    
+
+
     iSetColor(10, 10, 10);
     iFilledRectangle(b1.bx, b1.by, b1.b_dx, b1.b_dy);
     iFilledRectangle(b2.bx, b2.by, b2.b_dx, b2.b_dy);
@@ -987,28 +974,30 @@ void clear()
         }
     }
     for(int i = 0; i < 10; i++)  zx[i]='\0';
+    for(int i = 0; i < 50; i++)  f_name[i]='\0';
+
     for(int i =1; i <= N ; i++){
         len[i]=0;
         show_mode[i]=0;
         parallel_y[i]=0;
         g_color[i]=0;
     }
-    // free(len);
-    // free(show_mode);
 
-
+    l_name = 0;
     timer = 1;
     count_eqn = 1;
     mode_eqn = 0;
-}
+    save_mode = 0;
+    open_mode=0;
+    in_fname = 0;
+    open_fname = 0;
+    }
 
 void iDraw()
 {
     //place your drawing codes here
     iClear();
 
-    //draw_trigon(tri);
-    //tri_function_text(tri);
 
     if(mode == 0)
         homepage();
@@ -1152,6 +1141,10 @@ void iMouse(int button, int state, int mx, int my)
                 mode_point = 0;
                 tips_mode = (!tips_mode);
                 diff_color_mode =0;
+                open_fname = 0;
+                in_fname = 0;
+                save_mode = 0;
+                open_mode= 0;
             }
 
             /***  for color mode  ***/
@@ -1161,6 +1154,7 @@ void iMouse(int button, int state, int mx, int my)
                 for(i = 0; .75 * sy - 30 * i * scale_y> my; i++);
                 mode_eqn= i +1;
                 mode_point = 0;
+                tips_mode = 0;
                 if(temp == mode_eqn) diff_color_mode = (!diff_color_mode);  //checking same color box is selected or not
             }
 
@@ -1183,9 +1177,53 @@ void iMouse(int button, int state, int mx, int my)
                 diff_color_mode = 0;
                 mode = 0;
                 draw_mode = 0;
+                tips_mode = 0;
 
             }
 
+            /** open mode  **/
+
+            else if(  check(mx, my, 20*scale_x,80*scale_x,580* scale_y,610* scale_y)){
+                open_mode = 1;
+                save_mode = 0;
+                mode_point = 0;
+                mode_eqn =0;
+                diff_color_mode = 0;
+                tips_mode = 0;
+            }
+
+            /** save mode  **/
+
+            else if(  check(mx, my, 20*scale_x,80*scale_x,540* scale_y,570* scale_y)){
+                open_mode = 0;
+                save_mode = 1;
+                mode_point = 0;
+                mode_eqn =0;
+                diff_color_mode = 0;
+                tips_mode = 0;
+            }
+
+            /** filename save **/
+
+            else if( save_mode && check(mx, my, 90*scale_x,290*scale_x,540* scale_y,570* scale_y)){
+                in_fname = 1;
+                open_fname = 0;
+                mode_point = 0;
+                mode_eqn =0;
+                diff_color_mode = 0;
+                tips_mode = 0;
+            }
+            /** filename open **/
+
+            else if( open_mode && check(mx, my, 90*scale_x,290*scale_x,580* scale_y,610* scale_y)){
+                open_fname = 1;
+                in_fname = 0;
+                mode_point = 0;
+                mode_eqn =0;
+                diff_color_mode = 0;
+                save_mode = 0;
+                tips_mode = 0;
+            }
             /** zoom  **/
 
             else if( check(mx, my, 185*scale_x,305*scale_x,0,40*scale_y)){
@@ -1196,6 +1234,7 @@ void iMouse(int button, int state, int mx, int my)
                 mode_point = 0;
                 mode_eqn =0;
                 diff_color_mode = 0;
+                tips_mode = 0;
             }
 
             /** reset zoom  **/
@@ -1204,13 +1243,20 @@ void iMouse(int button, int state, int mx, int my)
                 mode_point = 0;
                 mode_eqn =0;
                 diff_color_mode = 0;
+                tips_mode = 0;
             }
+
 
             else {
                 mode_eqn= 0;
                 mode_point = 1;
                 mode_color =0;
+                tips_mode = 0;
                 diff_color_mode =0 ;
+                open_fname = 0;
+                in_fname = 0;
+                save_mode = 0;
+                open_mode= 0;
             }
         }
     }
@@ -1299,20 +1345,22 @@ void iKeyboard(unsigned char key)
         {
             if(key == '\r')     // \r =enter key
             {
+
                 str11[mode_eqn][len[mode_eqn]] ='\0';
                 draw_mode = 1;
                 make_point();
                 show_mode[mode_eqn]=1;
+
             }
             else if(key == '\b'){
-                if(len[mode_eqn] != 0) str11[mode_eqn][--len[mode_eqn]]='\0';   //str[eqn_mode][--len] erokom hobe
+                if(len[mode_eqn] != 0) str11[mode_eqn][--len[mode_eqn]]='\0';
             }
             else
             {
                 str11[mode_eqn][len[mode_eqn]++] = key;
             }
         }
-        if(mode_eqn == 0 && count_eqn >1){
+        if(mode_eqn == 0 && count_eqn >1 && in_fname != 1  && open_fname != 1){
 
                 /** zoom in **/
 
@@ -1323,7 +1371,43 @@ void iKeyboard(unsigned char key)
                if(z>.4) z-=.125;
             }
         }
+        else if(in_fname){
 
+            if(key == '\r')     // \r =enter key
+            {
+                f_name[l_name] = '\0';
+                save_mode = 0;
+                in_fname=0;
+                saving();
+                for(int i  = 0; i< 50; i++) f_name[i] = '\0';
+            }
+            else if(key == '\b'){
+                if(l_name != 0) f_name[--l_name]='\0';
+            }
+            else
+            {
+                f_name[l_name++] = key;
+            }
+        }
+        else if(open_fname){
+
+            if(key == '\r')     // \r =enter key
+            {
+                f_name[l_name] = '\0';
+                open_mode = 0;
+                open_fname = 0;
+                opening();
+                for(int i  = 0; i< 50; i++) f_name[i] = '\0';
+
+            }
+            else if(key == '\b'){
+                if(l_name != 0) f_name[--l_name]='\0';
+            }
+            else
+            {
+                f_name[l_name++] = key;
+            }
+        }
         else if(key == 'q')
             exit(0);
         else if(key == 'p')
