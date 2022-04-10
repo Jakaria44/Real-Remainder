@@ -950,9 +950,12 @@ void graphing_calc()
 
 void homepage(){
     iSetColor(103, 232, 235);
-    //if(sx>=800) iText(sx *.42, home_y, "Real Remainder", GLUT_BITMAP_TIMES_ROMAN_24 );
-    //else if(sx<600 ) iText(sx *.42, home_y, "Real Remainder", GLUT_BITMAP_9_BY_15 );
-    iShowBMP(0,0, "title.bmp");
+    if(sx== 1280) iShowBMP(0,0, "title.bmp");
+    else {
+	    if(sx>=800) iText(sx *.42, home_y, "Real Remainder", GLUT_BITMAP_TIMES_ROMAN_24 );
+    	    else if(sx<600 ) iText(sx *.42, home_y, "Real Remainder", GLUT_BITMAP_9_BY_15 );
+    }
+    
     iSetColor(10, 10, 10);
     iFilledRectangle(b1.bx, b1.by, b1.b_dx, b1.b_dy);
     iFilledRectangle(b2.bx, b2.by, b2.b_dx, b2.b_dy);
