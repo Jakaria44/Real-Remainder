@@ -1,0 +1,115 @@
+# depslib dependency file v1.0
+1563893532 source:c:\users\mimi\documents\new\igraphics-master\igraphics-master\solarsystem.cpp
+	"iGraphics.h"
+	"gl.h"
+
+1646908330 c:\users\mimi\documents\new\igraphics-master\igraphics-master\igraphics.h
+	<stdio.h>
+	<stdlib.h>
+	<windows.h>
+	"glut.h"
+	<time.h>
+	<math.h>
+	"glaux.h"
+
+1563893532 c:\users\mimi\documents\new\igraphics-master\igraphics-master\opengl\include\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1563893532 c:\users\mimi\documents\new\igraphics-master\igraphics-master\opengl\include\glaux.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1563893532 c:\users\mimi\documents\new\igraphics-master\igraphics-master\opengl\include\gl.h
+
+1646905413 source:c:\users\mimi\documents\new\igraphics-master\igraphics-master\mousedemo.cpp
+	"iGraphics.h"
+
+1563893532 source:c:\users\mimi\documents\new\igraphics-master\igraphics-master\balldemo.cpp
+	"iGraphics.h"
+	"gl.h"
+
+1563893532 source:c:\users\mimi\documents\new\igraphics-master\igraphics-master\picturedemo.cpp
+	"iGraphics.h"
+
+1646917356 source:c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\solarsystem.cpp
+	"iGraphics.h"
+	"gl.h"
+
+1646917356 c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\igraphics.h
+	<stdio.h>
+	<stdlib.h>
+	<windows.h>
+	"glut.h"
+	<time.h>
+	<math.h>
+	"glaux.h"
+
+1646917357 c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\opengl\include\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1646917357 c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\opengl\include\glaux.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1646917357 c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\opengl\include\gl.h
+
+1647359053 source:c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\balldemo.cpp
+	"iGraphics.h"
+	"gl.h"
+
+1647096688 source:c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\watch.cpp
+	"iGraphics.h"
+	<math.h>
+	<time.h>
+
+1650388074 source:c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\imain.cpp
+	"iGraphics.h"
+	<math.h>
+	<string.h>
+	<windows.h>
+
+1647359299 source:c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\mousedemo.cpp
+	"iGraphics.h"
+
+1649048692 source:c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\textinputdemo.cpp
+	"iGraphics.h"
+	<stdlib.h>
+	<math.h>
+	<string.h>
+
+1647348472 source:c:\users\asus\onedrive - buet\saved\1-1\cse-101\igraphics-master\igraphics-master\picturedemo.cpp
+	"iGraphics.h"
+
+1650629575 source:c:\users\asus\desktop\2005011_2005026\imain.cpp
+	"iGraphics.h"
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<string.h>
+	<windows.h>
+
+1646917356 c:\users\asus\desktop\2005011_2005026\igraphics.h
+	<stdio.h>
+	<stdlib.h>
+	<windows.h>
+	"glut.h"
+	<time.h>
+	<math.h>
+	"glaux.h"
+
+1646917357 c:\users\asus\desktop\2005011_2005026\opengl\include\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1646917357 c:\users\asus\desktop\2005011_2005026\opengl\include\glaux.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
